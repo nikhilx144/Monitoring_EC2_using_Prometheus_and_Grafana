@@ -28,21 +28,10 @@ pipeline {
                         sh 'export AWS_DEFAULT_REGION=${AWS_REGION}'
                         sh 'export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}'
                         sh 'export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}'
-                        
                         sh 'terraform init -reconfigure'
                         sh 'terraform plan'
                         sh 'terraform apply -auto-approve'
                     }
-                }
-            }
-        }
-
-        stage('Terraform Output') {
-            steps {
-                dir('terraform') { 
-                    echo 'EC2 Public IP and DNS:'
-                    sh 'terraform output ec2_public_ip || true'
-                    sh 'terraform output ec2_public_dns || true'
                 }
             }
         }

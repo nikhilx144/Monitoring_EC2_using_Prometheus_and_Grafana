@@ -17,7 +17,7 @@ pipeline {
             steps {
                 echo 'Running terraform to provision infrastructure...'
                 withCredentials([usernamePassword(
-                    credentialsId: 'aws-credentials', 
+                    credentialsId: 'aws_credentials', 
                     usernameVariable:'AWS_ACCESS_KEY_ID' , 
                     passwordVariable:'AWS_SECRET_ACCESS_KEY'
                     )

@@ -125,6 +125,9 @@ resource "aws_instance" "ec2-instance" {
     ${local.prometheus_config}
     EOT
 
+    # Login to AWS ECR
+    aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${var.ecr_repo}
+
     # Start monitoring stack i.e. the container using docker compose up command
     cd /opt/monitoring
     /usr/local/bin/docker-compose up -d

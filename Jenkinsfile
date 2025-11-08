@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'ap-south-2'
+        ECR_REPO = '661979762009.dkr.ecr.ap-south-2.amazonaws.com/devops_ci_cd_final_prac_6_clean'
     }
 
     stages {
@@ -10,6 +11,29 @@ pipeline {
             steps {
                 echo 'Checking out github repo...'
                 checkout scm
+            }
+        }
+
+        stage('Build App Docker Image') {
+            steps {
+                sh 'docker build -t my-app:latest .'
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'aws-username-pass-access-key',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    )
+                ]) 
+                {
+                    sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}'
+                    sh 'docker tag my-app:latest ${ECR_REPO}:latest'
+                    sh 'docker push ${ECR_REPO}:latest'
+                }
             }
         }
 

@@ -39,3 +39,10 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+  
+  app:
+    image: 661979762009.dkr.ecr.ap-south-2.amazonaws.com/devops_ci_cd_final_prac_6_clean:latest
+    container_name: my-app
+    restart: always
+    ports:
+      - "80:80"

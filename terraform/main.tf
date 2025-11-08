@@ -56,6 +56,32 @@ resource "aws_security_group" "ec2-sg" {
     }
 }
 
+resource "aws_iam_role_policy_attachment" "name" {
+    role = aws_iam_role.ec2-ecr-role.name
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_instance_profile" "ec2-profile" {
+    name = "ec2-instance-profile"
+    role = aws_iam_role.ec2_role.name
+}
+
+resource "aws_iam_role" "ec2-ecr-role" {
+    name = "ec2-ecr-role"
+    assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Action = "sts:AssumeRole"
+                Effect = "Allow"
+                Principal = {
+                    Service = "ec2.amazonaws.com"
+                }
+            }
+        ]
+    })
+}
+
 resource "aws_instance" "ec2-instance" {
     ami = var.ami_id
     instance_type = var.ec2_type
@@ -83,7 +109,7 @@ chmod +x /usr/local/bin/docker-compose
 mkdir -p /opt/monitoring
 
 # Write docker-compose.yml file 
-cat <<'EOT' > /opt/monitoring/docker-compose.yml 
+cat <<'EOT' > /opt/monitoring/docker-compose.yml
 ${local.docker_compose}
 EOT
 

@@ -63,7 +63,7 @@ resource "aws_iam_role_policy_attachment" "name" {
 
 resource "aws_iam_instance_profile" "ec2-profile" {
     name = "ec2-instance-profile"
-    role = aws_iam_role.ec2_role.name
+    role = aws_iam_role.ec2-ecr-role.name
 }
 
 resource "aws_iam_role" "ec2-ecr-role" {

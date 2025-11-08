@@ -62,7 +62,7 @@ resource "aws_iam_role_policy_attachment" "name" {
 }
 
 resource "aws_iam_instance_profile" "ec2-profile" {
-    name = "ec2-instance-profile"
+    name = "ec2-profile"
     role = aws_iam_role.ec2-ecr-role.name
 }
 
@@ -87,6 +87,7 @@ resource "aws_instance" "ec2-instance" {
     instance_type = var.ec2_type
     security_groups = [ aws_security_group.ec2-sg.name ]
     key_name = var.key_name
+    iam_instance_profile = aws_iam_instance_profile.ec2-profile.name
 
     user_data = <<-EOF
     #!/bin/bash

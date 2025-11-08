@@ -89,39 +89,39 @@ resource "aws_instance" "ec2-instance" {
     key_name = var.key_name
 
     user_data = <<-EOF
-#!/bin/bash
-yum update -y
+    #!/bin/bash
+    yum update -y
 
-# Install, enable and start Docker
-yum install -y docker
-systemctl enable docker
-systemctl start docker
+    # Install, enable and start Docker
+    yum install -y docker
+    systemctl enable docker
+    systemctl start docker
 
-# Add docker to ec2-user group
-usermod -aG docker ec2-user
+    # Add docker to ec2-user group
+    usermod -aG docker ec2-user
 
-# Install docker compose
-curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+    # Install docker compose
+    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
     -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
 
-# Create a monitoring directory
-mkdir -p /opt/monitoring
+    # Create a monitoring directory
+    mkdir -p /opt/monitoring
 
-# Write docker-compose.yml file 
-cat <<'EOT' > /opt/monitoring/docker-compose.yml
-${local.docker_compose}
-EOT
+    # Write docker-compose.yml file 
+    cat <<'EOT' > /opt/monitoring/docker-compose.yml
+    ${local.docker_compose}
+    EOT
 
-# Write rendered prometheus.yml file
-cat <<'EOT' > /opt/monitoring/prometheus.yml
-${local.prometheus_config}
-EOT
+    # Write rendered prometheus.yml file
+    cat <<'EOT' > /opt/monitoring/prometheus.yml
+    ${local.prometheus_config}
+    EOT
 
-# Start monitoring stack i.e. the container using docker compose up command
-cd /opt/monitoring
-/usr/local/bin/docker-compose up -d
-EOF
+    # Start monitoring stack i.e. the container using docker compose up command
+    cd /opt/monitoring
+    /usr/local/bin/docker-compose up -d
+    EOF
 
     tags = {
         Name = "Monitoring-Dashboard-EC2"

@@ -62,7 +62,17 @@ pipeline {
 
         stage('Deploy Latest App to EC2') {
             steps {
-                sshagent(['ec2-ssh-key']) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'aws-username-pass-access-key',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ),
+                    sshUserPrivateKey(
+                        credentialsId: 'ec2-ssh-key',
+                        keyFileVariable: 'KEY_FILE'
+                    )
+                ]) {
                     script {
                         def EC2_PUBLIC_IP = sh (
                             script: "cd terraform && terraform output -raw ec2_public_ip",
@@ -70,7 +80,8 @@ pipeline {
                         ).trim()
                         
                         sh """
-                        ssh -o StrictHostKeyChecking=no ec2-user@${EC2_PUBLIC_IP} '
+                        ssh -i $KEY_FILE -o StrictHostKeyChecking=no ec2-user@${EC2_PUBLIC_IP} '
+                            aws ecr get-login-password --region ${AWS_REGION} | sudo docker login --username AWS --password-stdin ${ECR_REPO}
                             cd /opt/monitoring
                             sudo docker-compose pull app
                             sudo docker-compose up -d app

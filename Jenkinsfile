@@ -59,6 +59,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy Latest App to EC2') {
+            steps {
+                sshagent(['ec2-ssh-key']) {
+                    script {
+                        def EC2_PUBLIC_IP = sh (
+                            script: "cd terraform && terraform output -raw ec2_public_ip",
+                            returnStdout: true
+                        ).trim()
+                        
+                        sh """
+                        ssh -o StrictHostKeyChecking=no ec2-user@${EC2_PUBLIC_IP} '
+                            cd /opt/monitoring
+                            sudo docker-compose pull app
+                            sudo docker-compose up -d app
+                        '
+                        """
+                    }
+                }
+            }
+        }
     }
 
     post {

@@ -63,9 +63,22 @@ pipeline {
         stage('Wait for EC2 to be Ready') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEY_FILE')
-                ]) {
+                    usernamePassword(
+                        credentialsId: 'aws-username-pass-access-key',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ),
+                    sshUserPrivateKey(
+                        credentialsId: 'ec2-ssh-key',
+                        keyFileVariable: 'KEY_FILE'
+                    )
+                ]) 
+                {
                     script {
+                        sh 'export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID'
+                        sh 'export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY'
+                        sh 'export AWS_DEFAULT_REGION=${AWS_REGION}'
+
                         def EC2_PUBLIC_IP = sh (
                             script: "cd terraform && terraform output -raw ec2_public_ip",
                             returnStdout: true

@@ -60,6 +60,55 @@ pipeline {
             }
         }
 
+        stage('Wait for EC2 to be Ready') {
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEY_FILE')
+                ]) {
+                    script {
+                        def EC2_PUBLIC_IP = sh (
+                            script: "cd terraform && terraform output -raw ec2_public_ip",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "⏳ Waiting for EC2 to finish cloud-init..."
+
+                        sh """
+                        ssh -i $KEY_FILE -o StrictHostKeyChecking=no ec2-user@${EC2_PUBLIC_IP} '
+                            echo "Checking readiness..."
+
+                            # Wait for docker to be installed and daemon ready
+                            until command -v docker >/dev/null 2>&1; do
+                                echo "Docker not installed yet... waiting"
+                                sleep 5
+                            done
+
+                            until sudo docker ps >/dev/null 2>&1; do
+                                echo "Docker daemon not ready... waiting"
+                                sleep 5
+                            done
+
+                            # Wait for docker-compose to be installed
+                            until command -v docker-compose >/dev/null 2>&1; do
+                                echo "docker-compose not installed yet... waiting"
+                                sleep 5
+                            done
+
+                            # Wait for user-data to create the directory
+                            until [ -d /opt/monitoring ]; do
+                                echo "/opt/monitoring directory missing... waiting"
+                                sleep 5
+                            done
+
+                            echo "✅ EC2 is fully ready!"
+                        '
+                        """
+                    }
+                }
+            }
+        }
+
+
         stage('Deploy Latest App to EC2') {
             steps {
                 withCredentials([

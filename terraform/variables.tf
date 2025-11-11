@@ -22,3 +22,8 @@ variable "ecr_repo" {
     description = "ECR Repository URL"
     default = "661979762009.dkr.ecr.ap-south-2.amazonaws.com/devops_ci_cd_final_prac_6_clean"
 }
+
+variable "my_public_ip" {
+    description = "My Public IP"
+    default = "183.82.51.10"
+}

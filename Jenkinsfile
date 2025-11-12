@@ -121,7 +121,6 @@ pipeline {
             }
         }
 
-
         stage('Deploy Latest App to EC2') {
             steps {
                 withCredentials([
